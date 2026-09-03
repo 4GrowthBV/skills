@@ -50,6 +50,8 @@ Run the applicable automated checks first, then execute the same behavioral sequ
 
 Perform this sequence at least twice on a memory-constrained iPhone and once on Android:
 
+Use a lower-memory device such as iPhone 13 as a priority regression target; it has historically been the least stable configuration for repeated keyboard/media transitions. Treat that as observed test history, not a permanent device guarantee.
+
 1. Open and close the keyboard before media.
 2. Open Bibliotheek and select a media card.
 3. Verify media loads and Unity is no longer consuming the large WebGL runtime concurrently.
@@ -59,6 +61,8 @@ Perform this sequence at least twice on a memory-constrained iPhone and once on 
 7. Tap the composer immediately after return.
 8. Verify the keyboard opens on the first tap, the caret appears, text is synchronized, and scrolling works.
 9. Repeat with a second media card and recheck process/renderer stability.
+
+Run state-changing media tests serially or with isolated test accounts. Concurrent returns from the same conversation on multiple devices can create duplicate continuation/follow-up events and invalidate an exactly-once assertion.
 
 Failure after step 7 usually indicates stale or missing geometry/focus in the newly created runtime, even when initial startup works.
 

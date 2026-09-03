@@ -23,6 +23,7 @@ The target experience is chat-app-like: one tap opens the correct keyboard, the 
 
 - Unity UI Toolkit owns product state, validation, layout, and the visible product design. The browser-created editable element is the IME, caret, selection, and text-entry surface; do not let it become an independent second input.
 - Keep the Unity canvas and its backing buffer stable while the keyboard animates. Represent keyboard occlusion inside Unity layout instead of repeatedly resizing or recreating WebGL rendering resources.
+- Do not confuse a shrinking native WebView or visible game-frame rectangle with a resized Unity drawing buffer. The host surface may become smaller while the child canvas backing remains frozen; measure both layers before concluding that GPU resources were reallocated.
 - In nested LearnWorlds frames, use the highest same-origin accessible ancestor whose `visualViewport` demonstrably changes with the keyboard. Never assume it is `window.top`; a cross-origin boundary requires an explicit relay.
 - Geometry is lifecycle state. Republish it after visibility, enablement, layout, tab, orientation, consumer, and WebGL-runtime transitions—not only at initial view creation.
 - Focus must originate from a trusted user gesture. Preserve that activation through the Unity proxy creation/focus sequence.
@@ -41,6 +42,8 @@ The target experience is chat-app-like: one tap opens the correct keyboard, the 
 5. Add or update deterministic Unity tests where the behavior can be expressed without a real browser. Use real devices for IME, caret, viewport, iframe, WebView, memory, and animation behavior.
 6. Run the regression checklist on Android and iOS. Include a media open/close cycle and keyboard focus after the reconstructed chat runtime.
 7. Report observed evidence separately from inference. A visual page reload is not proof of an out-of-memory event unless logs or process/render-process evidence support it.
+
+A standalone Safari/Chrome pass never substitutes for the same sequence in the LearnWorlds app. The app WebView can resize an ancestor, visible game frame, or child document differently even when the browser result is stable.
 
 ## Discover the current implementation
 

@@ -53,6 +53,41 @@ Supported phases are `keyboard-closed`, `keyboard-open`, `media-open`, `media-re
 
 Without DevTools, expose the returned object only through a temporary authenticated test-harness panel or diagnostic transport that preserves the same privacy boundary. Do not add console claims when nobody can read the console, and do not ship a public diagnostics panel in the production player.
 
+## Chrome and Edge DOM inspection
+
+Use whichever Chromium browser is actually connected to the device or automation provider. Chrome and Edge use the same basic DevTools target flow; an open browser window by itself is not enough.
+
+- Android Chrome: open `chrome://inspect/#devices`.
+- Android Edge: open `edge://inspect/#devices`.
+- Enable device discovery, confirm the exact page or WebView target, and verify its owning app/process before selecting **Inspect**.
+- A Chrome-owned target is useful for the standalone/browser-harness control but is not evidence that the LearnWorlds app WebView is inspectable.
+- If only one desktop browser is connected to the automation provider, use that browser and report the other as untested rather than assuming access.
+
+For a nested desktop/browser harness, inspect one frame boundary at a time. Start at the top document, identify visible candidate iframes by tag, dimensions, title, and stable IDs, enter the host frame, then the game frame, then the Unity entry document. In Playwright, use chained `frameLocator(...)` calls discovered from the current DOM. Do not hard-code an old frame count or selector without rediscovery.
+
+Never dump an authenticated frame tree indiscriminately. Iframe sources, tab metadata, accessibility trees, and DOM snapshots can include signed URLs, bearer tokens, user identifiers, and chat text. Gather only derived state such as:
+
+- iframe count and sanitized role/size;
+- `visualViewport` width, height, offsets, and scale;
+- game-frame and canvas rectangles;
+- canvas backing width and height;
+- active-element tag/type/input mode without its value;
+- presence of media/game frames and bounded lifecycle markers.
+
+Discard query strings and fragments; do not retain page text or input values. Prefer the included in-page probe for a stable privacy boundary.
+
+### What can be automated
+
+Run the same bounded state machine in each inspectable environment: baseline, keyboard open, keyboard closed, media open, media close, runtime ready, and first post-return focus. Assert process/frame lifetime and sanitized geometry at every transition.
+
+- Host HTML controls and media overlays can use semantic DOM locators.
+- Unity UI rendered into a canvas has no semantic DOM buttons. Use an explicit in-game test hook when available; otherwise use a fresh screenshot plus calibrated coordinates and revalidate the screen before every tap.
+- Desktop mobile emulation cannot prove native IME, caret, iOS form-assistant, or real `visualViewport` behavior. Those require a physical device.
+- Android app touch and lifecycle checks can be automated through ADB even when its DOM is not exposed. DOM assertions still require an app-owned DevTools target or the in-page probe.
+- iOS Safari DOM inspection is easiest through Safari Web Inspector on macOS. LearnWorlds app DOM inspection additionally requires its WKWebView to be inspectable. Reliable iOS touch/keyboard automation normally requires XCUITest or Appium on a provisioned Mac; a Windows WebKit proxy is an inspection aid, not full device automation.
+
+Use a dedicated test account or serialize state-changing flows. Opening and returning from the same media item concurrently on two devices can legitimately produce two server-side continuation events and make an otherwise correct client look duplicated.
+
 ## Android inspection
 
 Start by selecting the exact device and identifying the foreground package:
@@ -199,13 +234,15 @@ Check that the trusted gesture arms proxy focus, the proxy exists by finger-up, 
 
 Look for focus loss caused by layout rebuilds, iframe/host resize handlers, Unity focus changes, or an over-broad scroll/tap interceptor. Compare focus events with viewport events rather than assuming the keyboard itself dismissed.
 
+If this happens only after media return, capture focus, blur, host-viewport, and Unity keyboard-state events at sub-second resolution; an ordinary screenshot can miss the short open state. Check that the reconstructed runtime does not consume a stale pre-focus viewport snapshot or interpret its first settling update as a real keyboard-close transition, because either path can blur the newly focused proxy immediately.
+
 ### No caret but typing works
 
 Check for transforms, opacity/visibility, caret color, z-index, overlay alignment, or Unity rendering over the editable element. Keep the focused editor untransformed and use at least a 16px browser font.
 
 ### Canvas and fonts shrink
 
-Compare canvas CSS bounds and backing dimensions. Verify both the LearnWorlds game-frame height lock and child canvas freeze. The logical chat region may shrink to the visible viewport; the canvas and font scale should not.
+Compare native WebView bounds, ancestor/game-frame rectangles, canvas CSS bounds, and canvas backing dimensions separately. Verify both the LearnWorlds game-frame height lock and child canvas freeze. The native visible surface and logical chat region may shrink to the usable viewport; the canvas backing and font scale should not follow transient keyboard-animation sizes.
 
 ### Scrolling fails while the keyboard is open
 
@@ -214,3 +251,5 @@ Confirm the browser editor is focused, the gesture starts inside the scroll hit 
 ### Page reloads after repeated keyboard or media cycles
 
 Capture renderer/process evidence. Look for canvas reallocations, concurrent Unity.Quit()/iframe removal, explicit WebGL context loss, leaked iframe/listener/timer instances, or media and Unity running simultaneously on a memory-constrained device.
+
+A browser pass does not clear the app-WebView case. Repeat the exact sequence in the LearnWorlds app because its native container can resize the ancestor/game frame differently. Include a lower-memory iPhone such as iPhone 13 in repeated-cycle testing; historically it has exposed failures first, but reverify this on every relevant app/OS/build combination.

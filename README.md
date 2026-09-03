@@ -314,6 +314,8 @@ Do not commit:
 
 Use obvious placeholders such as `<device-serial>`, `<app-package>`, `<tenant-origin>`, and `<renderer-pid>` in commands and examples. Diagnostic utilities must suppress identifiers and page content by default; any opt-in sensitive output must be clearly documented.
 
+Treat browser-inspection output as sensitive too. Authenticated iframe `src` values, tab lists, accessibility trees, full DOM snapshots, and copied DevTools output can contain bearer tokens, signed query parameters, user data, or complete chat text. Prefer small derived assertions and sanitized geometry/capability objects. Never paste or commit a raw authenticated DOM/AX snapshot when a redacted structural summary is sufficient.
+
 Before pushing, review the staged diff, scan for secrets and personal/environment-specific data, and verify the configured Git author email. Contributors who do not want their email published should use their Git provider's no-reply address. Removing data in a later commit does not remove it from Git history; rotate exposed secrets immediately and follow the repository's history-scrubbing process before making the repository public.
 
 ## Durable References

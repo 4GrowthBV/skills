@@ -85,6 +85,10 @@ The custom LearnWorlds embed host locks the game iframe to its measured pre-keyb
 
 Avoid using transient keyboard animation frames to resize the WebGL drawing buffer. On memory-constrained iPhones, reallocating a large canvas or rapidly destroying graphics resources can cause renderer termination or a visible page reload.
 
+The observed high-risk chain is: the native host changes its visible viewport or an ancestor frame during the keyboard animation; an unstabilized child follows that size; Unity reallocates a large WebGL drawing buffer; memory pressure rises; and the renderer may be terminated or visibly reload. This chain is a diagnostic hypothesis until canvas backing dimensions plus process/log evidence confirm it. A smaller accessibility or iframe rectangle alone proves only that the visible host surface changed.
+
+Historically, a lower-memory iPhone 13 has been the least stable regression device for repeated keyboard and media transitions. Keep it in the matrix, but treat the result as build-, OS-, and host-version-specific rather than as a permanent platform rule. Passing in Safari does not clear the LearnWorlds app: its WKWebView may resize the game-frame stack differently.
+
 ## Focus and geometry lifecycle
 
 Geometry publication is not a one-time initialization step. Refresh normalized editor, composer, send, scroll, and interactive hit rectangles after:
@@ -149,5 +153,7 @@ Opening media in the custom LearnWorlds embed host intentionally replaces the We
 6. The host removes the game iframe, waits for teardown to settle, and creates the media iframe.
 7. Closing media records the return phase, destroys the media iframe, shows a lightweight restoration overlay, and creates a fresh game iframe with bounded return state.
 8. The new Unity runtime restores chat history, handles the pending media return once, emits the follow-up, and reports readiness; only then does the host hide the restoration overlay.
+
+The effective memory mitigation is to avoid keeping the large chat WebGL runtime alive behind the media view. "Release" here means that the child stops its keyboard/viewport activity and acknowledges parent-owned removal; the host then removes the game iframe before creating media. Do not add a competing child-side `Unity.Quit()` or forced WebGL-context loss when the parent can remove the frame on a timeout.
 
 Use monotonically changing tokens/session IDs so late iframe events from an earlier open/close cycle cannot mutate the current flow. Validate `event.source`, expected origin, message type, version, and media-session ID on every cross-frame message.
