@@ -282,6 +282,12 @@ Before relying on a skill for important work:
 
 Different models may interpret the same instructions differently, so identical behaviour across OpenAI, Claude, and Gemini should not automatically be assumed.
 
+## Available Skills
+
+### Products / LearnStrike
+
+- [`learnstrike-mobile-webgl-input`](skills/products/learnstrike/learnstrike-mobile-webgl-input/SKILL.md) — Improve mobile input for LearnStrike's `MultiChatBoilerplate`: WebGL in browsers/LearnWorlds app WebViews, with compatibility checks for native LearnStrike iOS/Android builds.
+
 ## Contributing
 
 When adding or updating a skill:
@@ -293,6 +299,30 @@ When adding or updating a skill:
 5. Avoid duplicating information that already exists elsewhere in the repository.
 6. Test the skill with realistic tasks.
 7. Keep platform-specific instructions separated when possible.
+
+## Public Repository Safety
+
+Treat every tracked file, commit, branch, tag, example, fixture, and Git author field as public information.
+
+Do not commit:
+
+* credentials, tokens, private keys, cookies, or authenticated URLs;
+* personal email addresses, phone numbers, user IDs, device serials/UDIDs, or device names;
+* customer/tenant domains, private routes, course names, chat content, screenshots, logs, or recordings;
+* local filesystem paths, machine names, internal IP addresses, or environment dumps;
+* private repository commit hashes, issue links, source excerpts, package identifiers, or reverse-engineering notes unless publication is explicitly approved.
+
+Use obvious placeholders such as `<device-serial>`, `<app-package>`, `<tenant-origin>`, and `<renderer-pid>` in commands and examples. Diagnostic utilities must suppress identifiers and page content by default; any opt-in sensitive output must be clearly documented.
+
+Treat browser-inspection output as sensitive too. Authenticated iframe `src` values, tab lists, accessibility trees, full DOM snapshots, and copied DevTools output can contain bearer tokens, signed query parameters, user data, or complete chat text. Prefer small derived assertions and sanitized geometry/capability objects. Never paste or commit a raw authenticated DOM/AX snapshot when a redacted structural summary is sufficient.
+
+Before pushing, review the staged diff, scan for secrets and personal/environment-specific data, and verify the configured Git author email. Contributors who do not want their email published should use their Git provider's no-reply address. Removing data in a later commit does not remove it from Git history; rotate exposed secrets immediately and follow the repository's history-scrubbing process before making the repository public.
+
+## Durable References
+
+Prefer stable behavior, responsibilities, protocols, and verification criteria over exact private source paths, implementation class names, selectors, or commit hashes. Instruct an agent to discover the current implementation with targeted searches and confirm ownership from callers and runtime behavior.
+
+Use an exact code reference only when it is a deliberately stable public interface and the precision materially changes the outcome. Keep historical investigations and version-specific evidence in access-controlled ADRs, issues, or test reports, then promote only the durable conclusion into a public skill. Links to authoritative public platform documentation are encouraged when they support a behavior that can change over time.
 
 ## Goal
 
