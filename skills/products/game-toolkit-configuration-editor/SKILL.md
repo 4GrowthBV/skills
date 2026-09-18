@@ -27,6 +27,7 @@ Work from the current implementation of the runtime MicroGames configuration ove
 
 ## Task routing and validation
 
+- **Visual round layout:** use the sibling [layout-editor skill](../game-toolkit-layout-editor/SKILL.md) for Edit Layout, canvas/inspector controls, mechanic mappings, pool previews, copy/reset, history, and layout persistence.
 - **Missing or incorrect control:** inspect `PopulateMissionSettings`, `PopulateRounds`, `AddMechanicSpecificRoundSettings`, or `PopulateValueObjects`, then its view event and controller handler.
 - **Lost text or language edits:** trace `HandleLocalisationValueChanged` and `BuildMicroGameContentAsync`; distinguish localisation keys from translated pool cells.
 - **Pool structure/import issue:** inspect the expansion's structure declarations, the selected renderer, `PoolCsvImportValidator`, and cross-language synchronization before changing table indexing.
